@@ -1,0 +1,219 @@
+:root {
+	--bg: #0e1117;
+	--panel: #161b22;
+	--panel-2: #1f2630;
+	--text: #e6edf3;
+	--muted: #9da7b3;
+	--primary: #7c9cff;
+	--primary-700: #648bff;
+	--accent: #ffd166;
+	--success: #41d497;
+	--danger: #ff6b6b;
+}
+
+/* Light theme — мягкая светло‑серая палитра */
+:root[data-theme="light"] {
+	--bg: #e5e7eb;        /* общий фон */
+	--panel: #f3f4f6;     /* карточки/панели */
+	--panel-2: #e8eaee;   /* второй слой */
+	--text: #1f2937;      /* основной текст */
+	--muted: #6b7280;     /* вторичный текст */
+	--primary: #3b82f6;   /* акцент */
+	--primary-700: #2563eb;
+	--accent: #f59e0b;
+	--success: #10b981;
+	--danger: #ef4444;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body {
+	margin: 0;
+	font-family: 'Nunito', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+	background: radial-gradient(1200px 800px at 70% -10%, #1b2230 0%, var(--bg) 60%);
+	color: var(--text);
+}
+
+/* Отдельный фон для светлой темы — без «белого по глазам» */
+:root[data-theme="light"] body {
+	background: radial-gradient(1200px 800px at 70% -10%, #f3f4f6 0%, var(--bg) 60%);
+}
+
+#app { min-height: 100vh; display: grid; }
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+.container { max-width: 980px; margin: 0 auto; padding: 24px; }
+
+.header { text-align: center; margin: 16px 0 24px; }
+.app-title { margin: 0 0 6px; font-size: 32px; letter-spacing: 0.3px; }
+.subtitle { margin: 0; color: var(--muted); }
+.header .toggles { margin-top: 10px; display: inline-flex; gap: 8px; }
+
+.dino-select-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0,1fr));
+	gap: 16px;
+	margin-top: 24px;
+}
+
+.dino-card {
+	appearance: none;
+	border: 2px solid transparent;
+	border-radius: 16px;
+	background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+	color: var(--text);
+	padding: 18px 16px;
+	cursor: pointer;
+	text-align: center;
+	transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.dino-card[aria-pressed="true"], .dino-card:focus-visible { border-color: var(--primary); outline: none; }
+.dino-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,.25); }
+
+.dino-emoji { font-size: 56px; line-height: 1; display: flex; align-items: center; justify-content: center; height: clamp(96px, 16vw, 160px); }
+.dino-emoji img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+.dino-name { font-weight: 800; margin-top: 8px; font-size: 18px; }
+.dino-desc { margin: 6px 0 0; color: var(--muted); }
+
+.actions { display: flex; gap: 12px; justify-content: center; margin-top: 20px; }
+
+.btn {
+	appearance: none;
+	border: 0; border-radius: 12px; padding: 12px 18px;
+	cursor: pointer; font-weight: 700;
+	background: var(--panel-2); color: var(--text);
+	transition: transform .12s ease, background .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.primary { background: linear-gradient(180deg, var(--primary) 0%, var(--primary-700) 100%); color: #0a0f1a; }
+.btn.ghost { background: transparent; border: 1.5px solid #2a3443; }
+
+/* Ghost-кнопка в светлой теме — читаемая */
+:root[data-theme="light"] .btn.ghost {
+	border-color: #d1d5db;
+	color: #111827;
+}
+
+.topbar { display: grid; grid-template-columns: auto 1fr auto auto; gap: 12px; align-items: center; margin-bottom: 16px; }
+.topbar .toggles { display: inline-flex; gap: 8px; }
+.toggle-wrap { display: grid; justify-items: center; gap: 4px; }
+.toggle-label { font-size: 12px; color: var(--muted); }
+.icon-btn { padding: 8px 10px; border-radius: 10px; }
+.icon-btn[aria-pressed="true"] { background: #25324a; }
+.badge { background: #222a36; border: 1px solid #2a3443; border-radius: 999px; padding: 8px 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; }
+
+.progress { display: grid; gap: 6px; }
+.progress-label { color: var(--muted); font-size: 14px; }
+.progress-bar { height: 10px; background: #222a36; border-radius: 999px; overflow: hidden; border: 1px solid #2a3443; }
+#progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), #ffa84d); transition: width .25s ease; }
+
+.lives { display: flex; gap: 8px; align-items: center; }
+.life { width: 18px; height: 18px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.2)); }
+
+.quiz-card, .result-card {
+	background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+	border: 1px solid #2a3443;
+	border-radius: 16px;
+	padding: 18px;
+	box-shadow: 0 10px 24px rgba(0,0,0,.25);
+}
+
+/* Light theme readability tweaks */
+:root[data-theme="light"] .badge { background: #eef2ff; border-color: #dbe3ff; color: #0f172a; }
+:root[data-theme="light"] .quiz-card,
+:root[data-theme="light"] .result-card,
+:root[data-theme="light"] .dino-panel { border-color: #d1d5db; box-shadow: 0 8px 20px rgba(0,0,0,.06); }
+:root[data-theme="light"] .answer-btn { background: #ffffff; border-color: #d1d5db; color: #0f172a; }
+:root[data-theme="light"] .answer-btn.correct { background: #ecfdf5; border-color: #10b981; }
+:root[data-theme="light"] .answer-btn.wrong { background: #fef2f2; border-color: #ef4444; }
+:root[data-theme="light"] .dino-name-big { color: #475569; }
+:root[data-theme="light"] .progress-bar { background: #e5e7eb; border-color: #e5e7eb; }
+
+/* Дополнительно: читаемые бонусы и ошибки в светлой теме */
+:root[data-theme="light"] .reward-chip {
+	background: #f1f5f9;
+	border-color: #d1d5db;
+	color: #111827;
+}
+:root[data-theme="light"] .mistake-item {
+	background: #f9fafb;
+	border-color: #d1d5db;
+	color: #111827;
+}
+
+.quiz-card h2 { margin-top: 0; }
+
+.answers { display: grid; gap: 10px; margin-top: 12px; }
+.answer-btn {
+	appearance: none; border: 1.5px solid #2a3443; border-radius: 12px; padding: 12px 14px; text-align: left; cursor: pointer;
+	background: #1a2230; color: var(--text); transition: background .12s ease, transform .06s ease, border-color .12s ease;
+}
+.answer-btn:hover { transform: translateY(-1px); }
+.answer-btn.correct { background: rgba(65, 212, 151, .15); border-color: var(--success); }
+.answer-btn.wrong { background: rgba(255, 107, 107, .15); border-color: var(--danger); }
+.answer-btn.disabled { opacity: .65; pointer-events: none; }
+
+.score { color: var(--muted); }
+
+.rewards-tray { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; min-height: 28px; justify-content: center; }
+.reward-chip { background: #222a36; border: 1px solid #2a3443; padding: 6px 8px; border-radius: 999px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+
+#fx-layer { position: fixed; inset: 0; pointer-events: none; }
+.fx-pop { position: absolute; animation: floatUp .9s ease forwards; filter: drop-shadow(0 4px 10px rgba(0,0,0,.35)); }
+
+/* Fireworks & fail flash */
+.fx-firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #ffd166; animation: fw 800ms ease-out forwards; }
+@keyframes fw { 0% { transform: translate(0,0) scale(1); opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; } }
+.fx-flash { position: absolute; inset: 0; background: rgba(255,0,0,0.12); animation: flash 300ms ease-out forwards; }
+@keyframes flash { from { opacity: .25; } to { opacity: 0; } }
+.shake { animation: shake 320ms ease-in-out; }
+@keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+@keyframes floatUp { from { transform: translateY(0) scale(.9); opacity: .95; } to { transform: translateY(-40px) scale(1.05); opacity: 0; } }
+
+/* Quiz two-column layout */
+.quiz-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; align-items: start; }
+.dino-panel {
+	background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+	border: 1px solid #2a3443;
+	border-radius: 16px;
+	padding: 18px;
+	min-height: 320px;
+	display: grid;
+	grid-template-rows: auto auto auto 1fr;
+	align-items: start;
+	justify-items: center;
+	gap: 8px;
+}
+.dino-mood-emoji { position: absolute; right: 12px; top: 12px; font-size: 22px; opacity: .9; }
+.dino-figure { font-size: 128px; line-height: 1; transition: transform .2s ease, filter .2s ease; }
+.dino-figure img { display: block; width: clamp(180px, 32vw, 360px); height: auto; object-fit: contain; }
+.dino-name-big { font-weight: 800; font-size: 18px; color: var(--muted); text-align: center; }
+.quiz-main { min-width: 0; }
+
+/* Dino mood on panel */
+.dino-panel.happy { box-shadow: 0 0 0 2px #2d4a3d inset; }
+.dino-panel.sad { box-shadow: 0 0 0 2px #5a2c35 inset; }
+.dino-panel.happy .dino-figure { transform: rotate(-4deg) scale(1.02); filter: drop-shadow(0 8px 18px rgba(65, 212, 151, .25)); }
+.dino-panel.sad .dino-figure { transform: rotate(6deg) scale(0.98); filter: drop-shadow(0 8px 18px rgba(255, 107, 107, .25)); }
+
+.result-rewards { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.result-mistakes { margin-top: 12px; display: none; }
+.mistake-item { background: #1a2230; border: 1px solid #2a3443; border-radius: 12px; padding: 12px; margin-top: 8px; }
+.mistake-q { font-weight: 800; margin: 0 0 6px; }
+.mistake-a { margin: 0; color: var(--muted); }
+
+/* Dino mood badges */
+.badge.sad { background: #2a1f25; border-color: #5a2c35; }
+.badge.happy { background: #1e2a23; border-color: #2d4a3d; }
+
+/* Responsive */
+@media (max-width: 720px) {
+	.dino-select-grid { grid-template-columns: 1fr; }
+	.topbar { grid-template-columns: 1fr; justify-items: start; gap: 8px; }
+	.quiz-layout { grid-template-columns: 1fr; }
+	.dino-panel { order: -1; min-height: 220px; }
+}

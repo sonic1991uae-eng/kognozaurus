@@ -1,0 +1,113 @@
+﻿﻿<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Когнос TM1 — Квиз с когнозаврами</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <!-- Старт -->
+  <section id="start-screen" class="screen active">
+    <div class="container">
+      <header class="header">
+        <h1 class="app-title">Когнос TM1 · Квиз</h1>
+        <p class="subtitle">Выберите своего когнозавра и начните игру!</p>
+        <div class="toggles">
+          <div class="toggle-wrap">
+            <button class="btn icon-btn sound-toggle-btn" aria-pressed="false" title="Звук: выкл">🔇</button>
+            <div class="toggle-label">Звук</div>
+          </div>
+          <div class="toggle-wrap">
+            <button class="btn icon-btn theme-toggle-btn" title="Тема">🌙</button>
+            <div class="toggle-label">Тема</div>
+          </div>
+        </div>
+      </header>
+
+      <div class="dino-select-grid" role="list" aria-label="Выбор когнозавра">
+        <button class="dino-card" data-dino="focus" aria-pressed="false" role="listitem">
+          <div class="dino-emoji" aria-hidden="true">🦖</div>
+          <div class="dino-name">PAWозавр</div>
+          <p class="dino-desc">Сила фокуса и скорость решений</p>
+        </button>
+        <button class="dino-card" data-dino="logic" aria-pressed="false" role="listitem">
+          <div class="dino-emoji" aria-hidden="true">🦕</div>
+          <div class="dino-name">Фидоцератепс</div>
+          <p class="dino-desc">Креатив и широкий обзор</p>
+        </button>
+        <button class="dino-card" data-dino="creo" aria-pressed="false" role="listitem">
+          <div class="dino-emoji" aria-hidden="true">🦅</div>
+          <div class="dino-name">Кубодокс</div>
+          <p class="dino-desc">Логика, терпение и структура</p>
+        </button>
+      </div>
+
+      <div class="actions"><button id="start-btn" class="btn primary" disabled>Начать квиз</button></div>
+    </div>
+  </section>
+
+  <!-- Квиз -->
+  <section id="quiz-screen" class="screen">
+    <div class="container">
+      <div class="quiz-layout">
+        <aside id="dino-panel" class="dino-panel" aria-label="Ваш когнозавр">
+          <div id="dino-mood-emoji" class="dino-mood-emoji" aria-hidden="true"></div>
+          <div class="dino-figure" id="dino-figure" aria-hidden="true">🦖</div>
+          <div class="dino-name-big" id="dino-name-big">PAWозавр</div>
+          <div id="rewards-tray" class="rewards-tray" aria-live="polite" aria-atomic="false"></div>
+        </aside>
+        <main class="quiz-main">
+          <div class="topbar">
+            <div class="badge" id="selected-dino-badge">🦖 PAWозавр</div>
+            <div class="progress">
+              <div class="progress-label"><span id="progress-index">1</span>/<span id="progress-total">15</span></div>
+              <div class="progress-bar"><div id="progress-fill"></div></div>
+            </div>
+            <div class="lives" id="lives" aria-label="Жизни"></div>
+            <div class="score" title="Количество бонусов">⭐ Бонусы: <span id="reward-count">0</span></div>
+            <div class="toggles">
+              <div class="toggle-wrap">
+                <button class="btn icon-btn sound-toggle-btn" aria-pressed="false" title="Звук: выкл">🔇</button>
+                <div class="toggle-label">Звук</div>
+              </div>
+              <div class="toggle-wrap">
+                <button class="btn icon-btn theme-toggle-btn" title="Тема">🌙</button>
+                <div class="toggle-label">Тема</div>
+              </div>
+            </div>
+          </div>
+          <div class="card quiz-card">
+            <h2 id="question-text">Вопрос</h2>
+            <div id="answers" class="answers" role="group" aria-label="Варианты ответа"></div>
+          </div>
+          <div class="actions"><button id="next-btn" class="btn" disabled>Дальше</button></div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <!-- Итоги -->
+  <section id="result-screen" class="screen">
+    <div class="container">
+      <div class="card result-card">
+        <h2>Итоги игры</h2>
+        <p id="result-summary"></p>
+        <div id="result-rewards" class="result-rewards"></div>
+        <div id="result-mistakes" class="result-mistakes"></div>
+      </div>
+      <div class="actions">
+        <button id="play-again-btn" class="btn primary">Сыграть ещё</button>
+        <button id="show-mistakes-btn" class="btn ghost">Показать ошибки</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="fx-layer" aria-hidden="true"></div>
+<script src="questions.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
