@@ -1,4 +1,4 @@
-﻿﻿<!doctype html>
+<!doctype html>
 <html lang="ru">
 <head>
   <meta charset="utf-8">
@@ -8,13 +8,32 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+<!-- Прелоадер (3 сек) -->
+<div id="preload-screen" class="preload-screen">
+  <img src="logo.png" alt="Логотип" class="preload-logo">
+</div>
+
 <div id="app">
   <!-- Старт -->
   <section id="start-screen" class="screen active">
     <div class="container">
       <header class="header">
         <h1 class="app-title">Когнос TM1 · Квиз</h1>
-        <p class="subtitle">Выберите своего когнозавра и начните игру!</p>
+        <p class="subtitle">Выберите своего когнозавра, введите имя и начните игру!</p>
+
+        <!-- Имя + лучший результат -->
+        <div class="start-form" aria-labelledby="player-name-label">
+          <label id="player-name-label" for="player-name" class="input-label">Имя игрока</label>
+          <div class="input-row">
+            <input id="player-name" class="text-input" type="text"
+                   autocomplete="off" aria-required="true" aria-invalid="false"
+                   maxlength="44">
+            <button id="name-random-btn" class="btn ghost" type="button" title="Придумать имя">🎲 Придумать имя</button>
+          </div>
+          <div id="personal-best" class="best-note" aria-live="polite"></div>
+        </div>
+
         <div class="toggles">
           <div class="toggle-wrap">
             <button class="btn icon-btn sound-toggle-btn" aria-pressed="false" title="Звук: выкл">🔇</button>
@@ -61,7 +80,7 @@
         </aside>
         <main class="quiz-main">
           <div class="topbar">
-            <div class="badge" id="selected-dino-badge">🦖 PAWозавр</div>
+            <div class="badge" id="player-badge" title="Имя игрока">👤 —</div>
             <div class="progress">
               <div class="progress-label"><span id="progress-index">1</span>/<span id="progress-total">15</span></div>
               <div class="progress-bar"><div id="progress-fill"></div></div>
@@ -89,6 +108,22 @@
     </div>
   </section>
 
+  <!-- Экран поражения -->
+  <section id="fail-screen" class="screen">
+    <div class="container">
+      <div class="card fail-card">
+        <img class="skull-img" src="assets/skull.png" alt="Череп">
+        <h2 class="fail-title">Ваш когнозавр пал 💀</h2>
+        <p id="fail-summary" class="fail-summary"></p>
+        <div id="fail-mistakes" class="result-mistakes"></div>
+      </div>
+      <div class="actions">
+        <button id="fail-retry-btn" class="btn primary">Сыграть ещё</button>
+        <button id="fail-show-mistakes-btn" class="btn ghost">Показать ошибки</button>
+      </div>
+    </div>
+  </section>
+
   <!-- Итоги -->
   <section id="result-screen" class="screen">
     <div class="container">
@@ -106,7 +141,10 @@
   </section>
 </div>
 
+<!-- слои эффектов -->
 <div id="fx-layer" aria-hidden="true"></div>
+<canvas id="win-canvas" aria-hidden="true"></canvas>
+
 <script src="questions.js"></script>
 <script src="script.js"></script>
 </body>
