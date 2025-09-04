@@ -318,3 +318,40 @@ body {
   0%   { transform: translateX(-120%); }
   100% { transform: translateX(120vw); }
 }
+
+
+/* === Логотипы прелоадера по теме (с анимацией и без наложений) === */
+.preload-logo {
+  display: none;
+  position: absolute;
+  max-width: 800px;
+  max-height: 800px;
+  transform: scale(.9);
+  opacity: 0;
+}
+
+:root[data-theme="light"] .logo-light,
+:root[data-theme="dark"]  .logo-dark {
+  display: block;
+  opacity: 1;
+  animation: preloadFadeIn 1s ease forwards;
+}
+
+@keyframes preloadFadeIn {
+  from { opacity: 0; transform: scale(.9); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* === Fix: центровка кнопок "Звук" и "Тема" в шапке === */
+.header .toggles {
+  display: flex !important;
+  justify-content: center;
+  gap: 8px;
+}
+
+.header .toggle-wrap {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+}
+
