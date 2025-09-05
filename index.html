@@ -89,6 +89,9 @@
             </div>
             <div class="lives" id="lives" aria-label="Жизни"></div>
             <div class="score" title="Количество бонусов">⭐ Бонусы: <span id="reward-count">0</span></div>
+            <button id="exit-btn" class="btn danger small" title="Выйти в меню (прогресс не сохранится)">
+              <span class="icon">🏠</span> Меню
+            </button>
             <div class="toggles">
               <div class="toggle-wrap">
                 <button class="btn icon-btn sound-toggle-btn" aria-pressed="false" title="Звук: выкл">🔇</button>
@@ -142,6 +145,21 @@
     </div>
   </section>
 </div>
+
+
+  <!-- Модальное окно подтверждения выхода -->
+  <div id="confirm-exit" class="modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="1"></div>
+    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-exit-title" aria-describedby="confirm-exit-desc">
+      <div class="modal-illustration" aria-hidden="true">🦖</div>
+      <h3 id="confirm-exit-title" class="modal-title">Выйти в меню?</h3>
+      <p id="confirm-exit-desc" class="modal-text">Прогресс не сохранится. Вы уверены, что хотите выйти?</p>
+      <div class="actions modal-actions">
+        <button id="confirm-exit-yes" class="btn danger small">Да, выйти 🏠</button>
+        <button id="confirm-exit-no" class="btn ghost small">Отмена ↩️</button>
+      </div>
+    </div>
+  </div>
 
 <!-- слои эффектов -->
 <div id="fx-layer" aria-hidden="true"></div>
