@@ -320,12 +320,23 @@
       const test = new Image(); test.onload = () => { holder.innerHTML = `<img src="${d.img}" alt="${d.name}">`; }; test.src = d.img;
     });
   }
+  
+  function updateBadgeColor(key){
+    playerBadge.classList.remove('focus','logic','creo');
+    if(key) playerBadge.classList.add(key);
+  }
+
   function setCardPressed(key) {
     dinoCards.forEach(c => c.setAttribute('aria-pressed', c.getAttribute('data-dino') === key ? 'true' : 'false'));
   }
 
   // ===== Утилиты =====
-  function showScreen(screen) { [startScreen, quizScreen, failScreen, resultScreen].forEach(s => s.classList.remove('active')); screen.classList.add('active'); }
+  function showScreen(screen) {
+    [startScreen, quizScreen, failScreen, resultScreen].forEach(s => s.classList.remove('active'));
+    screen.classList.add('active');
+    // 🔄 Обновляем индикацию звука/темы на всех экранах
+    syncToggleButtons();
+  }
   function shuffleInPlace(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -656,6 +667,21 @@
   startBtn.addEventListener('click', startGame);
   nextBtn.addEventListener('click', nextQuestion);
 
+  
+  // Кнопка "Меню" (выйти из игры)
+  const exitBtn = document.getElementById('exit-btn');
+  if (exitBtn) {
+    exitBtn.addEventListener('click', () => {
+      showConfirmExit(exitBtn).then((sure) => {
+        if (sure) {
+          stopWinShow();
+          showScreen(startScreen);
+          updatePersonalBestNote();
+          updateStartBtnState();
+        }
+      });
+    });
+  }
   playAgainBtn.addEventListener('click', () => {
     stopWinShow(); // на всякий случай
     showScreen(startScreen);
@@ -679,7 +705,46 @@
   soundToggleBtns.forEach(btn => btn.addEventListener('click', () => {
     state.soundOn = !state.soundOn; localStorage.setItem(SOUND_KEY, state.soundOn ? 'on' : 'off'); syncToggleButtons(); if (state.soundOn) ensureAudio();
   }));
-  themeToggleBtns.forEach(btn => btn.addEventListener('click', toggleTheme));
+  themeToggleBtns.forEach(btn => btn.addEventListener('click', () => { toggleTheme(); syncToggleButtons(); }));
+
+  // ===== Кастомное подтверждение выхода =====
+  function showConfirmExit(triggerBtn) {
+    return new Promise((resolve) => {
+      const root = document.getElementById('confirm-exit');
+      const btnYes = document.getElementById('confirm-exit-yes');
+      const btnNo  = document.getElementById('confirm-exit-no');
+      if (!root || !btnYes || !btnNo) { resolve(false); return; }
+
+      root.classList.add('open');
+      root.setAttribute('aria-hidden', 'false');
+
+      const prevActive = document.activeElement;
+      btnNo.focus();
+
+      const cleanup = (result) => {
+        root.classList.remove('open');
+        root.setAttribute('aria-hidden', 'true');
+        btnYes.removeEventListener('click', onYes);
+        btnNo.removeEventListener('click', onNo);
+        root.removeEventListener('click', onBackdrop);
+        document.removeEventListener('keydown', onKey);
+        if (triggerBtn && triggerBtn.focus) triggerBtn.focus();
+        else if (prevActive && prevActive.focus) prevActive.focus();
+        resolve(result);
+      };
+
+      const onYes = () => cleanup(true);
+      const onNo  = () => cleanup(false);
+      const onBackdrop = (e) => { if (e.target && e.target.dataset && e.target.dataset.close) cleanup(false); };
+      const onKey = (e) => { if (e.key === 'Escape') cleanup(false); if (e.key === 'Enter') cleanup(true); };
+
+      btnYes.addEventListener('click', onYes);
+      btnNo.addEventListener('click', onNo);
+      root.addEventListener('click', onBackdrop);
+      document.addEventListener('keydown', onKey, { capture: true });
+    });
+  }
+
 
   // ===== Init =====
   (function init() {
@@ -689,12 +754,16 @@
     loadPrefs();                // подтягиваем имя/настройки
     updateStartBtnState();      // актуализируем кнопку старта
 
+    // На время прелоадера — блокируем переключение темы (чтобы логотипы не "мигали")
+    themeToggleBtns.forEach(btn => btn.disabled = true);
+
     // Прелоадер: показываем логотип 3 секунды, затем старт-экран
     const preload = document.getElementById('preload-screen');
-    // Пока прелоадер виден, основное приложение держим в состоянии стартового экрана,
-    // но не обязательно его показывать под оверлеем. После таймера скрываем прелоадер и показываем старт.
     setTimeout(() => {
       if (preload) preload.style.display = 'none';
+      // Снимаем блокировку и синхронизируем кнопки
+      themeToggleBtns.forEach(btn => btn.disabled = false);
+      syncToggleButtons();
       showScreen(startScreen);
     }, 3000);
   })();
