@@ -205,8 +205,7 @@ body{
 
   .quiz-layout{ grid-template-columns:1fr; gap:18px; }
   .dino-panel{ order:-1; grid-template-rows:auto auto auto auto; min-height:auto; }
-  .dino-figure img,
-  .dino-figure video{ width: clamp(140px, 48vw, 240px); }
+  .dino-figure{ width: clamp(140px, 48vw, 240px); }
 
   #quiz-screen .container{
     min-height:100dvh;
@@ -276,8 +275,7 @@ body{
   .lives{ gap:6px; }
   .score{ font-size:15px; }
 
-  .dino-figure img,
-  .dino-figure video{ width: clamp(120px, 62vw, 200px); }
+  .dino-figure{ width: clamp(120px, 62vw, 200px); }
   .card h2{ font-size:20px; }
   .answer-btn{ font-size:15px; padding:12px; }
   .actions .btn{ max-width:340px; margin:0 auto; }
@@ -295,11 +293,16 @@ body{
   position: relative;
 }
 .dino-mood-emoji{ position:absolute; right:12px; top:12px; font-size:22px; opacity:.9; }
-.dino-figure{ font-size:128px; line-height:1; transition: transform .2s ease, filter .2s ease; }
+.dino-figure{
+  font-size:128px;
+  line-height:1;
+  transition: transform .2s ease, filter .2s ease;
+  width: clamp(180px, 32vw, 360px);
+}
 .dino-figure img,
 .dino-figure video{
   display:block;
-  width: clamp(180px, 32vw, 360px);
+  width: 100%;
   max-width: 100%;
   height:auto;
   object-fit:contain;
