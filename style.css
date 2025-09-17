@@ -244,22 +244,22 @@ body{
   }
 
   .topbar{
-    grid-template-columns:1fr;
+    grid-template-columns: auto 1fr auto auto;
     grid-template-areas:
-      "badge"
-      "progress"
-      "lives"
-      "score"
-      "toggles"
-      "exit";
-    row-gap:10px;
+      "badge badge badge badge"
+      "progress progress progress progress"
+      "lives score toggles exit";
+    row-gap:12px;
+    column-gap:10px;
+    align-items:center;
   }
   .topbar > *{ justify-self:stretch; }
   .topbar > .progress{ min-width:0; }
-  .topbar > .score{ text-align:left; }
-  .topbar > .toggles{ justify-self:start; }
-  .topbar .toggle-wrap{ align-items:start; }
-  .topbar > #exit-btn{ justify-self:stretch; }
+  .topbar > .score{ text-align:left; justify-self:start; }
+  .topbar > .toggles{ justify-self:start; display:flex; gap:8px; }
+  .topbar .toggle-wrap{ align-items:center; display:flex; }
+  .topbar .toggle-label{ display:none; }
+  .topbar > #exit-btn{ justify-self:end; }
 
   .card{ padding:16px; }
   .answers{ gap:12px; }
