@@ -425,8 +425,7 @@
     video.autoplay = true;
     video.muted = true;
     video.playsInline = true;
-    video.width = 360;
-    video.height = 360;
+    video.classList.add('dino-reaction');
     if (posterPng) video.setAttribute('poster', posterPng);
 
     sources.forEach(s => {
