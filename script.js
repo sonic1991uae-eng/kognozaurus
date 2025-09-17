@@ -696,9 +696,22 @@
   }
 
   // ===== Утилиты =====
+  function setLanguageToggleVisibility(shouldShow) {
+    const hide = !shouldShow;
+    languageToggleBtns.forEach(btn => {
+      const wrap = btn.closest('.toggle-wrap');
+      if (wrap) {
+        wrap.classList.toggle('hidden', hide);
+      } else {
+        btn.classList.toggle('hidden', hide);
+      }
+    });
+  }
+
   function showScreen(screen) {
     [startScreen, quizScreen, failScreen, resultScreen].forEach(s => s.classList.remove('active'));
     screen.classList.add('active');
+    setLanguageToggleVisibility(screen === startScreen);
     // 🔄 Обновляем индикацию звука/темы на всех экранах
     syncToggleButtons();
   }

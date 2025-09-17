@@ -137,6 +137,12 @@ body{
 .btn.small{ padding:8px 12px; font-size:14px; line-height:1.2; display:inline-flex; align-items:center; gap:6px; }
 .icon-btn{ padding:8px 10px; border-radius:10px; }
 
+@media (min-width: 721px){
+  #quiz-screen #next-btn{
+    min-width:300px;
+  }
+}
+
 /* ---------- Topbar (two-row) ---------- */
 .topbar{
   display:grid;
