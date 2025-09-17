@@ -21,29 +21,33 @@
   <section id="start-screen" class="screen active">
     <div class="container">
       <header class="header">
-        <h1 class="app-title">Когнос TM1 · Квиз</h1>
-        <p class="subtitle">Выберите своего когнозавра, введите имя и начните игру!</p>
+        <h1 class="app-title" data-i18n-key="app-title">Когнос TM1 · Квиз</h1>
+        <p class="subtitle" data-i18n-key="subtitle">Выберите своего когнозавра, введите имя и начните игру!</p>
 
         <!-- Имя + лучший результат -->
         <div class="start-form" aria-labelledby="player-name-label">
-          <label id="player-name-label" for="player-name" class="input-label">Имя игрока</label>
+          <label id="player-name-label" for="player-name" class="input-label" data-i18n-key="player-name-label">Имя игрока</label>
           <div class="input-row">
             <input id="player-name" class="text-input" type="text"
                    autocomplete="off" aria-required="true" aria-invalid="false"
                    maxlength="44">
-            <button id="name-random-btn" class="btn ghost" type="button" title="Придумать имя">🎲 Придумать имя</button>
+            <button id="name-random-btn" class="btn ghost" type="button" title="Придумать имя" data-i18n-key="random-name">🎲 Придумать имя</button>
           </div>
           <div id="personal-best" class="best-note" aria-live="polite"></div>
         </div>
 
         <div class="toggles">
           <div class="toggle-wrap">
-            <button class="btn icon-btn sound-toggle-btn" aria-pressed="false" title="Звук: выкл">🔇</button>
-            <div class="toggle-label">Звук</div>
+            <button class="btn icon-btn sound-toggle-btn" type="button" aria-pressed="false" title="Звук: выкл">🔇</button>
+            <div class="toggle-label" data-i18n-key="sound-label">Звук</div>
           </div>
           <div class="toggle-wrap">
-            <button class="btn icon-btn theme-toggle-btn" title="Тема">🌙</button>
-            <div class="toggle-label">Тема</div>
+            <button class="btn icon-btn theme-toggle-btn" type="button" title="Тема">🌙</button>
+            <div class="toggle-label" data-i18n-key="theme-label">Тема</div>
+          </div>
+          <div class="toggle-wrap">
+            <button class="btn icon-btn language-toggle-btn" type="button" title="Язык">🌐 RU</button>
+            <div class="toggle-label" data-i18n-key="language-label">Язык</div>
           </div>
         </div>
       </header>
@@ -51,22 +55,22 @@
       <div class="dino-select-grid" role="list" aria-label="Выбор когнозавра">
         <button class="dino-card" data-dino="focus" aria-pressed="false" role="listitem">
           <div class="dino-emoji" aria-hidden="true">🦖</div>
-          <div class="dino-name">PAWозавр</div>
-          <p class="dino-desc">Сила фокуса и скорость решений</p>
+          <div class="dino-name" data-i18n-dino="focus-name">PAWозавр</div>
+          <p class="dino-desc" data-i18n-dino="focus-desc">Сила фокуса и скорость решений</p>
         </button>
         <button class="dino-card" data-dino="logic" aria-pressed="false" role="listitem">
           <div class="dino-emoji" aria-hidden="true">🦕</div>
-          <div class="dino-name">Фидоцератепс</div>
-          <p class="dino-desc">Креатив и широкий обзор</p>
+          <div class="dino-name" data-i18n-dino="logic-name">Фидоцератепс</div>
+          <p class="dino-desc" data-i18n-dino="logic-desc">Креатив и широкий обзор</p>
         </button>
         <button class="dino-card" data-dino="creo" aria-pressed="false" role="listitem">
           <div class="dino-emoji" aria-hidden="true">🦅</div>
-          <div class="dino-name">Кубодокс</div>
-          <p class="dino-desc">Логика, терпение и структура</p>
+          <div class="dino-name" data-i18n-dino="creo-name">Кубодокс</div>
+          <p class="dino-desc" data-i18n-dino="creo-desc">Логика, терпение и структура</p>
         </button>
       </div>
 
-      <div class="actions"><button id="start-btn" class="btn primary" disabled>Начать квиз</button></div>
+      <div class="actions"><button id="start-btn" class="btn primary" disabled data-i18n-key="start-button">Начать квиз</button></div>
     </div>
   </section>
 
@@ -88,26 +92,30 @@
               <div class="progress-bar"><div id="progress-fill"></div></div>
             </div>
             <div class="lives" id="lives" aria-label="Жизни"></div>
-            <div class="score" title="Количество бонусов">⭐ Бонусы: <span id="reward-count">0</span></div>
+            <div class="score" title="Количество бонусов">⭐ <span data-i18n-key="score-label">Бонусы:</span> <span id="reward-count">0</span></div>
             <button id="exit-btn" class="btn danger small" title="Выйти в меню (прогресс не сохранится)">
-              <span class="icon">🏠</span> Меню
+              <span class="icon">🏠</span> <span data-i18n-key="menu-button">Меню</span>
             </button>
             <div class="toggles">
               <div class="toggle-wrap">
-                <button class="btn icon-btn sound-toggle-btn" aria-pressed="false" title="Звук: выкл">🔇</button>
-                <div class="toggle-label">Звук</div>
+                <button class="btn icon-btn sound-toggle-btn" type="button" aria-pressed="false" title="Звук: выкл">🔇</button>
+                <div class="toggle-label" data-i18n-key="sound-label">Звук</div>
               </div>
               <div class="toggle-wrap">
-                <button class="btn icon-btn theme-toggle-btn" title="Тема">🌙</button>
-                <div class="toggle-label">Тема</div>
+                <button class="btn icon-btn theme-toggle-btn" type="button" title="Тема">🌙</button>
+                <div class="toggle-label" data-i18n-key="theme-label">Тема</div>
+              </div>
+              <div class="toggle-wrap">
+                <button class="btn icon-btn language-toggle-btn" type="button" title="Язык">🌐 RU</button>
+                <div class="toggle-label" data-i18n-key="language-label">Язык</div>
               </div>
             </div>
           </div>
           <div class="card quiz-card">
-            <h2 id="question-text">Вопрос</h2>
+            <h2 id="question-text" data-i18n-key="question-placeholder">Вопрос</h2>
             <div id="answers" class="answers" role="group" aria-label="Варианты ответа"></div>
           </div>
-          <div class="actions"><button id="next-btn" class="btn" disabled>Дальше</button></div>
+          <div class="actions"><button id="next-btn" class="btn" disabled data-i18n-key="next-button">Дальше</button></div>
         </main>
       </div>
     </div>
@@ -118,13 +126,13 @@
     <div class="container">
       <div class="card fail-card">
         <img class="skull-img" src="assets/skull.png" alt="Череп">
-        <h2 class="fail-title">Ваш когнозавр пал 💀</h2>
+        <h2 class="fail-title" data-i18n-key="fail-title">Ваш когнозавр пал 💀</h2>
         <p id="fail-summary" class="fail-summary"></p>
         <div id="fail-mistakes" class="result-mistakes"></div>
       </div>
       <div class="actions">
-        <button id="fail-retry-btn" class="btn primary">Сыграть ещё</button>
-        <button id="fail-show-mistakes-btn" class="btn ghost">Показать ошибки</button>
+        <button id="fail-retry-btn" class="btn primary" data-i18n-key="play-again">Сыграть ещё</button>
+        <button id="fail-show-mistakes-btn" class="btn ghost" data-i18n-key="show-mistakes">Показать ошибки</button>
       </div>
     </div>
   </section>
@@ -133,14 +141,14 @@
   <section id="result-screen" class="screen">
     <div class="container">
       <div class="card result-card">
-        <h2>Итоги игры</h2>
+        <h2 data-i18n-key="result-title">Итоги игры</h2>
         <p id="result-summary"></p>
         <div id="result-rewards" class="result-rewards"></div>
         <div id="result-mistakes" class="result-mistakes"></div>
       </div>
       <div class="actions">
-        <button id="play-again-btn" class="btn primary">Сыграть ещё</button>
-        <button id="show-mistakes-btn" class="btn ghost">Показать ошибки</button>
+        <button id="play-again-btn" class="btn primary" data-i18n-key="play-again">Сыграть ещё</button>
+        <button id="show-mistakes-btn" class="btn ghost" data-i18n-key="show-mistakes">Показать ошибки</button>
       </div>
     </div>
   </section>
@@ -152,11 +160,11 @@
     <div class="modal-backdrop" data-close="1"></div>
     <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-exit-title" aria-describedby="confirm-exit-desc">
       <div class="modal-illustration" aria-hidden="true">🦖</div>
-      <h3 id="confirm-exit-title" class="modal-title">Выйти в меню?</h3>
-      <p id="confirm-exit-desc" class="modal-text">Прогресс не сохранится. Вы уверены, что хотите выйти?</p>
+      <h3 id="confirm-exit-title" class="modal-title" data-i18n-key="confirm-title">Выйти в меню?</h3>
+      <p id="confirm-exit-desc" class="modal-text" data-i18n-key="confirm-desc">Прогресс не сохранится. Вы уверены, что хотите выйти?</p>
       <div class="actions modal-actions">
-        <button id="confirm-exit-yes" class="btn danger small">Да, выйти 🏠</button>
-        <button id="confirm-exit-no" class="btn ghost small">Отмена ↩️</button>
+        <button id="confirm-exit-yes" class="btn danger small" data-i18n-key="confirm-yes">Да, выйти 🏠</button>
+        <button id="confirm-exit-no" class="btn ghost small" data-i18n-key="confirm-no">Отмена ↩️</button>
       </div>
     </div>
   </div>
