@@ -187,6 +187,70 @@ body{
   .topbar > #exit-btn{ justify-self:end; }
 }
 
+@media (max-width: 720px){
+  .container{ padding:20px 16px 28px; }
+  .app-title{ font-size:26px; }
+  .subtitle{ font-size:15px; }
+
+  .start-form{ gap:10px; }
+  .input-row{ grid-template-columns:1fr; width:100%; }
+  .input-row .btn{ width:100%; justify-content:center; }
+  .best-note{ text-align:center; }
+  .header .toggles{ width:100%; justify-content:center; flex-wrap:wrap; }
+
+  .dino-select-grid{ grid-template-columns: repeat(2,minmax(0,1fr)); gap:12px; }
+  .dino-card{ padding:16px 14px; }
+  .dino-emoji{ font-size:48px; }
+
+  .quiz-layout{ grid-template-columns:1fr; gap:18px; }
+  .dino-panel{ order:-1; grid-template-rows:auto auto auto auto; min-height:auto; }
+  .dino-figure img{ width: clamp(140px, 48vw, 240px); }
+
+  .topbar{
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "badge"
+      "progress"
+      "lives"
+      "score"
+      "toggles"
+      "exit";
+    row-gap:10px;
+  }
+  .topbar > *{ justify-self:stretch; }
+  .topbar > .progress{ min-width:0; }
+  .topbar > .score{ text-align:left; }
+  .topbar > .toggles{ justify-self:start; }
+  .topbar .toggle-wrap{ align-items:start; }
+  .topbar > #exit-btn{ justify-self:stretch; }
+
+  .card{ padding:16px; }
+  .answers{ gap:12px; }
+  .actions{ flex-direction:column; }
+  .actions .btn{ width:100%; }
+}
+
+@media (max-width: 480px){
+  body{ background:var(--bg); }
+  .container{ padding:16px 12px 24px; }
+  .app-title{ font-size:24px; }
+  .subtitle{ font-size:14px; }
+
+  .dino-select-grid{ grid-template-columns:1fr; }
+  .dino-card{ padding:14px 12px; }
+  .dino-emoji{ font-size:42px; }
+
+  .badge{ font-size:14px; padding:8px 10px; }
+  .progress-label{ font-size:13px; }
+  .lives{ gap:6px; }
+  .score{ font-size:15px; }
+
+  .dino-figure img{ width: clamp(120px, 62vw, 200px); }
+  .card h2{ font-size:20px; }
+  .answer-btn{ font-size:15px; padding:12px; }
+  .actions .btn{ max-width:340px; margin:0 auto; }
+}
+
 /* ---------- Quiz layout ---------- */
 .quiz-layout{
   display:grid; grid-template-columns: 1fr 2fr; gap:16px; align-items:start;
