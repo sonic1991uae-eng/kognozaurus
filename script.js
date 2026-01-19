@@ -12,6 +12,10 @@
   const DEFAULT_LANGUAGE = 'ru';
   const SUPPORTED_LANGUAGES = ['ru', 'en'];
   const REACTION_MS = 5000; // длительность показа эмоции динозавра (мс)
+  const PRELOADER_DURATION_MS = 3000; // длительность прелоадера
+  const WIN_SHOW_DURATION_MS = 10000; // длительность финального салюта
+  const ROCKET_LAUNCH_INTERVAL_MS = 180; // интервал запуска ракет в салюте
+  const FX_POP_DURATION_MS = 3000; // длительность всплывающих эффектов
 
   const I18N = {
     ru: {
@@ -509,11 +513,15 @@
     o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.3);
   }
 
+  // Audio pool to prevent memory leaks
+  const audioPool = new Audio();
+  let isAudioPlaying = false;
+
   // 🔊 Основная функция для проигрывания твоих WAV/MP3
   // Ищет по порядку:
   //   assets/{dino}_{kind}.wav → assets/{dino}_{kind}.mp3 → assets/{kind}.wav → assets/{kind}.mp3
   function playDinoSound(kind) {
-    if (!state.soundOn) return;
+    if (!state.soundOn || isAudioPlaying) return;
     const dino = state.selectedDinoKey || 'focus';
     const variants = [
       `assets/${dino}_${kind}.wav`,
@@ -521,14 +529,26 @@
       `assets/${kind}.wav`,
       `assets/${kind}.mp3`,
     ];
-    const audio = new Audio();
     let i = 0;
-    const tryNext = () => {
-      if (i >= variants.length) return;
-      audio.src = variants[i++];
-      audio.play().catch(() => { /* autoplay блок — попробуем следующее */ });
+
+    const cleanup = () => {
+      isAudioPlaying = false;
+      audioPool.onerror = null;
+      audioPool.onended = null;
     };
-    audio.addEventListener('error', tryNext);
+
+    const tryNext = () => {
+      if (i >= variants.length) {
+        cleanup();
+        return;
+      }
+      audioPool.src = variants[i++];
+      audioPool.play().catch(() => { tryNext(); });
+    };
+
+    audioPool.onerror = tryNext;
+    audioPool.onended = cleanup;
+    isAudioPlaying = true;
     tryNext();
   }
 
@@ -599,7 +619,7 @@
     ctx.fillRect(0,0,innerWidth,innerHeight);
 
     // 🚫 Запускаем новые ракеты только до окончания окна шоу
-    if (performance.now() < WFX.tEnd && (ts - WFX.lastLaunch > 180)) {
+    if (performance.now() < WFX.tEnd && (ts - WFX.lastLaunch > ROCKET_LAUNCH_INTERVAL_MS)) {
       for(let i=0;i<3;i++) launchRocket();
       WFX.lastLaunch = ts;
     }
@@ -670,7 +690,13 @@
     if (dino.img) {
       const alt = getDinoName(dinoKey);
       const test = new Image();
-      test.onload = () => { containerEl.innerHTML = `<img src="${dino.img}" alt="${alt}">`; };
+      test.onload = () => {
+        const img = document.createElement('img');
+        img.src = dino.img;
+        img.alt = alt;
+        containerEl.innerHTML = '';
+        containerEl.appendChild(img);
+      };
       test.onerror = () => { containerEl.textContent = dino.emoji || ''; };
       test.src = dino.img;
     } else { containerEl.textContent = dino.emoji || ''; }
@@ -680,7 +706,13 @@
       const key = card.getAttribute('data-dino'), d = getDinoConfig(key); if (!d || !d.img) return;
       const holder = card.querySelector('.dino-emoji'); if (!holder) return;
       const test = new Image();
-      test.onload = () => { holder.innerHTML = `<img src="${d.img}" alt="${getDinoName(key)}">`; };
+      test.onload = () => {
+        const img = document.createElement('img');
+        img.src = d.img;
+        img.alt = getDinoName(key);
+        holder.innerHTML = '';
+        holder.appendChild(img);
+      };
       test.onerror = () => { holder.textContent = d.emoji || ''; };
       test.src = d.img;
     });
@@ -747,10 +779,15 @@
     progressTotalEl.textContent = String(TOTAL_QUESTIONS);
     const ratio = Math.min(state.currentIndex / TOTAL_QUESTIONS, 1); progressFill.style.width = `${Math.floor(ratio * 100)}%`;
   }
-  function fxPop(x, y, content) { const node = document.createElement('div'); node.className = 'fx-pop'; node.style.left = `${x}px`; node.style.top = `${y}px`; node.textContent = content; fxLayer.appendChild(node); setTimeout(() => node.remove(), 3000); }
+  function fxPop(x, y, content) { const node = document.createElement('div'); node.className = 'fx-pop'; node.style.left = `${x}px`; node.style.top = `${y}px`; node.textContent = content; fxLayer.appendChild(node); setTimeout(() => node.remove(), FX_POP_DURATION_MS); }
 
   // ===== Имя игрока =====
-  function normalizeName(s) { return (s || '').trim(); }
+  function normalizeName(s) {
+    return (s || '')
+      .trim()
+      .replace(/[<>"'&]/g, '') // Remove potentially dangerous characters
+      .substring(0, 44); // Enforce maxlength
+  }
   function updateStartBtnState() {
     const hasName = normalizeName(state.playerName).length > 0;
     const hasDino = !!state.selectedDinoKey;
@@ -819,12 +856,17 @@
     container.innerHTML = '';
     container.appendChild(video);
 
-    let endedOrTimeout = false;
+    let hasEnded = false;
     const safeHide = () => {
-      if (endedOrTimeout) return;
-      endedOrTimeout = true;
+      if (hasEnded) return;
+      hasEnded = true;
       hideDinoMood();
+      video.remove(); // Explicitly remove video element from DOM
     };
+
+    // Use 'once' option to auto-remove event listeners
+    video.addEventListener('ended', safeHide, { once: true });
+    video.addEventListener('error', safeHide, { once: true });
 
     clearTimeout(moodHideTimer);
     moodHideTimer = setTimeout(safeHide, REACTION_MS);
@@ -1060,9 +1102,8 @@
       if (info.isRecord) fxPop(window.innerWidth/2, 120, getCurrentLangConfig().format.newRecord);
     }
 
-    // ===== САЛЮТ 10 секунд, итоги после полного завершения частиц =====
-    const duration = 10000; // 10s
-    startWinShow(duration, () => {
+    // ===== САЛЮТ, итоги после полного завершения частиц =====
+    startWinShow(WIN_SHOW_DURATION_MS, () => {
       showScreen(resultScreen);
     });
 
@@ -1186,7 +1227,7 @@
     // На время прелоадера — блокируем переключение темы (чтобы логотипы не "мигали")
     themeToggleBtns.forEach(btn => btn.disabled = true);
 
-    // Прелоадер: показываем логотип 3 секунды, затем старт-экран
+    // Прелоадер: показываем логотип, затем старт-экран
     const preload = document.getElementById('preload-screen');
     setTimeout(() => {
       if (preload) preload.style.display = 'none';
@@ -1194,6 +1235,6 @@
       themeToggleBtns.forEach(btn => btn.disabled = false);
       syncToggleButtons();
       showScreen(startScreen);
-    }, 3000);
+    }, PRELOADER_DURATION_MS);
   })();
 })();
