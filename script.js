@@ -861,13 +861,18 @@
       if (hasEnded) return;
       hasEnded = true;
       hideDinoMood();
-      video.remove(); // Explicitly remove video element from DOM
+      // Cleanup video element after hiding
+      setTimeout(() => {
+        if (video.parentNode) {
+          video.pause();
+          video.src = '';
+          video.remove();
+        }
+      }, 100);
     };
 
-    // Use 'once' option to auto-remove event listeners
-    video.addEventListener('ended', safeHide, { once: true });
-    video.addEventListener('error', safeHide, { once: true });
-
+    // Let video play for full duration - don't hide early on ended/error
+    // The timeout ensures reactions display for consistent duration
     clearTimeout(moodHideTimer);
     moodHideTimer = setTimeout(safeHide, REACTION_MS);
   }
