@@ -448,9 +448,41 @@
     applyLanguage();
   }
 
-  // ===== Хранилище результатов =====
+  // ===== Хранилище результатов с улучшенной обработкой ошибок =====
+  function safeLocalStorageSet(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      if (e.name === 'QuotaExceededError') {
+        console.warn('localStorage quota exceeded, clearing old scores');
+        try {
+          // Keep only top 10 scores
+          const db = readScores();
+          const entries = Object.entries(db);
+          if (entries.length > 10) {
+            const sorted = entries.sort((a, b) => {
+              const aScore = a[1].best ? a[1].best.correct : 0;
+              const bScore = b[1].best ? b[1].best.correct : 0;
+              return bScore - aScore;
+            });
+            const kept = sorted.slice(0, 10);
+            const newDb = Object.fromEntries(kept);
+            localStorage.setItem(key, JSON.stringify(newDb));
+            localStorage.setItem(key, value); // Try again
+            return true;
+          }
+        } catch (e2) {
+          console.error('Failed to cleanup localStorage:', e2);
+        }
+      }
+      console.error('localStorage error:', e);
+      return false;
+    }
+  }
+
   function readScores() { try { return JSON.parse(localStorage.getItem(SCORES_KEY) || '{}'); } catch { return {}; } }
-  function writeScores(data) { try { localStorage.setItem(SCORES_KEY, JSON.stringify(data)); } catch {} }
+  function writeScores(data) { safeLocalStorageSet(SCORES_KEY, JSON.stringify(data)); }
   function getBestFor(name) { const db = readScores(); const rec = db[name]; return rec && rec.best ? rec.best : null; }
   function saveRun(name, result) {
     const db = readScores(); const now = new Date().toISOString();
@@ -513,15 +545,19 @@
     o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.3);
   }
 
-  // Audio pool to prevent memory leaks
-  const audioPool = new Audio();
-  let isAudioPlaying = false;
+  // Improved audio pool with separate channels for dino sounds and beeps
+  const audioPool = {
+    dino: new Audio(),
+    effect: new Audio(),
+    isDinoPlaying: false,
+    isEffectPlaying: false
+  };
 
   // 🔊 Основная функция для проигрывания твоих WAV/MP3
   // Ищет по порядку:
   //   assets/{dino}_{kind}.wav → assets/{dino}_{kind}.mp3 → assets/{kind}.wav → assets/{kind}.mp3
   function playDinoSound(kind) {
-    if (!state.soundOn || isAudioPlaying) return;
+    if (!state.soundOn || audioPool.isDinoPlaying) return;
     const dino = state.selectedDinoKey || 'focus';
     const variants = [
       `assets/${dino}_${kind}.wav`,
@@ -532,9 +568,9 @@
     let i = 0;
 
     const cleanup = () => {
-      isAudioPlaying = false;
-      audioPool.onerror = null;
-      audioPool.onended = null;
+      audioPool.isDinoPlaying = false;
+      audioPool.dino.onerror = null;
+      audioPool.dino.onended = null;
     };
 
     const tryNext = () => {
@@ -542,13 +578,13 @@
         cleanup();
         return;
       }
-      audioPool.src = variants[i++];
-      audioPool.play().catch(() => { tryNext(); });
+      audioPool.dino.src = variants[i++];
+      audioPool.dino.play().catch(() => { tryNext(); });
     };
 
-    audioPool.onerror = tryNext;
-    audioPool.onended = cleanup;
-    isAudioPlaying = true;
+    audioPool.dino.onerror = tryNext;
+    audioPool.dino.onended = cleanup;
+    audioPool.isDinoPlaying = true;
     tryNext();
   }
 
@@ -683,38 +719,69 @@
   }
   document.addEventListener('visibilitychange', ()=>{ if(document.hidden) stopWinShow(true); });
 
-  // ===== Картинки динозавров =====
+  // ===== Загрузка изображений с повторными попытками =====
+  function loadImageWithRetry(url, retries = 2) {
+    return new Promise((resolve, reject) => {
+      let attempt = 0;
+
+      const tryLoad = () => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => {
+          attempt++;
+          if (attempt < retries) {
+            setTimeout(tryLoad, 500 * attempt); // 500ms, 1000ms delays
+          } else {
+            reject(new Error(`Failed to load ${url} after ${retries} attempts`));
+          }
+        };
+        img.src = url + (attempt > 0 ? `?retry=${attempt}` : ''); // Cache busting on retry
+      };
+
+      tryLoad();
+    });
+  }
+
+  // ===== Картинки динозавров с retry logic =====
   function setFigureImage(containerEl, dinoKey) {
     if (!containerEl) return;
     const dino = getDinoConfig(dinoKey) || {};
     if (dino.img) {
       const alt = getDinoName(dinoKey);
-      const test = new Image();
-      test.onload = () => {
-        const img = document.createElement('img');
-        img.src = dino.img;
-        img.alt = alt;
-        containerEl.innerHTML = '';
-        containerEl.appendChild(img);
-      };
-      test.onerror = () => { containerEl.textContent = dino.emoji || ''; };
-      test.src = dino.img;
-    } else { containerEl.textContent = dino.emoji || ''; }
+      loadImageWithRetry(dino.img)
+        .then(img => {
+          const imgEl = document.createElement('img');
+          imgEl.src = img.src;
+          imgEl.alt = alt;
+          containerEl.innerHTML = '';
+          containerEl.appendChild(imgEl);
+        })
+        .catch(() => {
+          containerEl.textContent = dino.emoji || '';
+        });
+    } else {
+      containerEl.textContent = dino.emoji || '';
+    }
   }
+
   function enhanceDinoCardsWithImages() {
     dinoCards.forEach(card => {
-      const key = card.getAttribute('data-dino'), d = getDinoConfig(key); if (!d || !d.img) return;
-      const holder = card.querySelector('.dino-emoji'); if (!holder) return;
-      const test = new Image();
-      test.onload = () => {
-        const img = document.createElement('img');
-        img.src = d.img;
-        img.alt = getDinoName(key);
-        holder.innerHTML = '';
-        holder.appendChild(img);
-      };
-      test.onerror = () => { holder.textContent = d.emoji || ''; };
-      test.src = d.img;
+      const key = card.getAttribute('data-dino'), d = getDinoConfig(key);
+      if (!d || !d.img) return;
+      const holder = card.querySelector('.dino-emoji');
+      if (!holder) return;
+
+      loadImageWithRetry(d.img)
+        .then(img => {
+          const imgEl = document.createElement('img');
+          imgEl.src = img.src;
+          imgEl.alt = getDinoName(key);
+          holder.innerHTML = '';
+          holder.appendChild(imgEl);
+        })
+        .catch(() => {
+          holder.textContent = d.emoji || '';
+        });
     });
   }
   
@@ -781,12 +848,26 @@
   }
   function fxPop(x, y, content) { const node = document.createElement('div'); node.className = 'fx-pop'; node.style.left = `${x}px`; node.style.top = `${y}px`; node.textContent = content; fxLayer.appendChild(node); setTimeout(() => node.remove(), FX_POP_DURATION_MS); }
 
-  // ===== Имя игрока =====
+  // ===== Имя игрока с обратной связью =====
   function normalizeName(s) {
-    return (s || '')
-      .trim()
+    const original = (s || '').trim();
+    const cleaned = original
       .replace(/[<>"'&]/g, '') // Remove potentially dangerous characters
       .substring(0, 44); // Enforce maxlength
+
+    // Show feedback if characters were removed
+    if (cleaned !== original && original.length > 0) {
+      const removedSpecial = /[<>"'&]/.test(original);
+      const truncated = original.length > 44;
+
+      if (removedSpecial) {
+        fxPop(playerNameInput.getBoundingClientRect().right - 50,
+              playerNameInput.getBoundingClientRect().top,
+              '⚠️');
+      }
+    }
+
+    return cleaned;
   }
   function updateStartBtnState() {
     const hasName = normalizeName(state.playerName).length > 0;
@@ -992,27 +1073,53 @@
     updateQuestionTextsForLanguage();
   }
   function renderQuestion() {
-    hideDinoMood();
-    const questions = getQuestions();
-    const qIdx = state.questionIndices[state.currentIndex];
-    const q = questions[qIdx];
-    if (!q) return;
-    questionTextEl.textContent = q.q;
-    const mapped = q.options.map((text, idx) => ({ text, optionIndex: idx, isCorrect: idx === q.correctIndex }));
-    shuffleInPlace(mapped);
-    answersContainer.innerHTML = '';
-    mapped.forEach(opt => {
-      const btn = document.createElement('button');
-      btn.className = 'answer-btn';
-      btn.textContent = opt.text;
-      btn.dataset.optionIndex = String(opt.optionIndex);
-      btn.addEventListener('click', (ev) => handleAnswerClick(btn, opt.isCorrect, opt.optionIndex, ev));
-      answersContainer.appendChild(btn);
-    });
-    nextBtn.disabled = true;
-    state.answerLocked = false;
-    setBadgeMood('neutral');
-    updateProgress();
+    try {
+      hideDinoMood();
+      const questions = getQuestions();
+
+      // Error boundary: Check if we have questions
+      if (!questions || questions.length === 0) {
+        console.error('No questions available');
+        questionTextEl.textContent = getCurrentLangConfig().static['question-placeholder'] || 'Question unavailable';
+        answersContainer.innerHTML = '';
+        nextBtn.disabled = true;
+        return;
+      }
+
+      const qIdx = state.questionIndices[state.currentIndex];
+      const q = questions[qIdx];
+
+      // Error boundary: Check if question exists
+      if (!q) {
+        console.error('Question not found at index:', qIdx);
+        questionTextEl.textContent = 'Question unavailable';
+        answersContainer.innerHTML = '';
+        nextBtn.disabled = true;
+        return;
+      }
+
+      questionTextEl.textContent = q.q;
+      const mapped = q.options.map((text, idx) => ({ text, optionIndex: idx, isCorrect: idx === q.correctIndex }));
+      shuffleInPlace(mapped);
+      answersContainer.innerHTML = '';
+      mapped.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'answer-btn';
+        btn.textContent = opt.text;
+        btn.dataset.optionIndex = String(opt.optionIndex);
+        btn.addEventListener('click', (ev) => handleAnswerClick(btn, opt.isCorrect, opt.optionIndex, ev));
+        answersContainer.appendChild(btn);
+      });
+      nextBtn.disabled = true;
+      state.answerLocked = false;
+      setBadgeMood('neutral');
+      updateProgress();
+    } catch (error) {
+      console.error('Error rendering question:', error);
+      questionTextEl.textContent = 'Error loading question';
+      answersContainer.innerHTML = '';
+      nextBtn.disabled = true;
+    }
   }
   function lockAnswers() { Array.from(answersContainer.children).forEach(btn => { btn.classList.add('disabled'); btn.setAttribute('aria-disabled', 'true'); }); }
   function revealCorrect() {
@@ -1182,7 +1289,34 @@
     setLanguage(nextLang);
   }));
 
-  // ===== Кастомное подтверждение выхода =====
+  // ===== Keyboard shortcuts =====
+  document.addEventListener('keydown', (e) => {
+    // Only on quiz screen
+    if (!quizScreen.classList.contains('active')) return;
+
+    // Don't interfere if modal is open
+    const modal = document.getElementById('confirm-exit');
+    if (modal && modal.classList.contains('open')) return;
+
+    // Number keys (1-4) to select answers
+    if (e.key >= '1' && e.key <= '4') {
+      if (state.answerLocked) return;
+      const answerBtns = answersContainer.querySelectorAll('.answer-btn:not(.disabled)');
+      const index = parseInt(e.key) - 1;
+      if (answerBtns[index]) {
+        e.preventDefault();
+        answerBtns[index].click();
+      }
+    }
+
+    // Space or Enter for "Next" button
+    if ((e.key === ' ' || e.key === 'Enter') && !nextBtn.disabled) {
+      e.preventDefault();
+      nextBtn.click();
+    }
+  });
+
+  // ===== Кастомное подтверждение выхода с focus trap =====
   function showConfirmExit(triggerBtn) {
     return new Promise((resolve) => {
       const root = document.getElementById('confirm-exit');
@@ -1196,6 +1330,29 @@
       const prevActive = document.activeElement;
       btnNo.focus();
 
+      // Focus trap implementation
+      const focusableElements = [btnYes, btnNo];
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+
+      const trapFocus = (e) => {
+        if (e.key !== 'Tab') return;
+
+        if (e.shiftKey) {
+          // Shift + Tab
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          // Tab
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      };
+
       const cleanup = (result) => {
         root.classList.remove('open');
         root.setAttribute('aria-hidden', 'true');
@@ -1203,6 +1360,7 @@
         btnNo.removeEventListener('click', onNo);
         root.removeEventListener('click', onBackdrop);
         document.removeEventListener('keydown', onKey);
+        document.removeEventListener('keydown', trapFocus);
         if (triggerBtn && triggerBtn.focus) triggerBtn.focus();
         else if (prevActive && prevActive.focus) prevActive.focus();
         resolve(result);
@@ -1217,29 +1375,66 @@
       btnNo.addEventListener('click', onNo);
       root.addEventListener('click', onBackdrop);
       document.addEventListener('keydown', onKey, { capture: true });
+      document.addEventListener('keydown', trapFocus);
     });
   }
 
 
-  // ===== Init =====
-  (function init() {
-    enhanceDinoCardsWithImages();
-    pickDino('focus');          // авто-выбор динозавра
-    resetGameState(true);       // не переопределяем выбранного
-    loadPrefs();                // подтягиваем имя/настройки
-    updateStartBtnState();      // актуализируем кнопку старта
+  // ===== Init с умным прелоадером =====
+  (async function init() {
+    const preload = document.getElementById('preload-screen');
 
     // На время прелоадера — блокируем переключение темы (чтобы логотипы не "мигали")
     themeToggleBtns.forEach(btn => btn.disabled = true);
 
-    // Прелоадер: показываем логотип, затем старт-экран
-    const preload = document.getElementById('preload-screen');
-    setTimeout(() => {
-      if (preload) preload.style.display = 'none';
-      // Снимаем блокировку и синхронизируем кнопки
-      themeToggleBtns.forEach(btn => btn.disabled = false);
-      syncToggleButtons();
-      showScreen(startScreen);
-    }, PRELOADER_DURATION_MS);
+    try {
+      // Preload critical assets in parallel
+      const criticalAssets = [
+        'assets/pawozavr.png',
+        'assets/fidocerateps.png',
+        'assets/kubodoks.png'
+      ];
+
+      const minDisplayTime = 1000; // Show preloader for at least 1 second
+      const startTime = Date.now();
+
+      // Load assets with retry logic
+      await Promise.allSettled(
+        criticalAssets.map(url => loadImageWithRetry(url, 2))
+      );
+
+      // Initialize UI
+      enhanceDinoCardsWithImages();
+      pickDino('focus');
+      resetGameState(true);
+      loadPrefs();
+      updateStartBtnState();
+
+      // Ensure minimum display time for preloader
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, minDisplayTime - elapsed);
+
+      setTimeout(() => {
+        if (preload) preload.style.display = 'none';
+        themeToggleBtns.forEach(btn => btn.disabled = false);
+        syncToggleButtons();
+        showScreen(startScreen);
+      }, remaining);
+
+    } catch (error) {
+      console.error('Error during initialization:', error);
+      // Still show the app even if assets fail
+      setTimeout(() => {
+        if (preload) preload.style.display = 'none';
+        themeToggleBtns.forEach(btn => btn.disabled = false);
+        enhanceDinoCardsWithImages();
+        pickDino('focus');
+        resetGameState(true);
+        loadPrefs();
+        updateStartBtnState();
+        syncToggleButtons();
+        showScreen(startScreen);
+      }, 1000);
+    }
   })();
 })();
